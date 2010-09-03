@@ -1,0 +1,34 @@
+%div{:id => "#{@cell.name}", :class => "oa_notes form"}
+
+  = error_messages_for :note
+
+  - form_tag "", "data-event-url" => url_for_event(@note.new_record? ? :create : :update) do    
+
+    - unless @note.new_record?
+      = hidden_field_tag 'id', @note.id
+      
+    %div.new_note
+      %p.title
+        = @note.new_record? ? "New note" : "Update this note"
+      %div.note_content
+        = text_area :note, :content, :rows => 2
+        
+    %p.submit
+      = submit_tag @note.new_record? ? "Create!" : "Update!"
+      |
+      = link_to "Cancel", url_for_event(:cancel), :class => "action_link"
+      
+      
+  - unless @note.new_record?
+    -# Give focus to textarea when updating
+    :javascript
+      jQuery('form##{@cell.name} .note_content textarea').focus();
+
+
+  :javascript
+    form = jQuery("div##{@cell.name} form");
+    form.submit(function() {
+      jQuery.ajax({url: form.attr("data-event-url"), data: form.serialize() + savedParams('#{@cell.parent.name}'), type: 'POST', dataType: 'script'})
+      return false;
+    });
+  

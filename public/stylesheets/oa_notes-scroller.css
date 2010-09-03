@@ -1,0 +1,86 @@
+/* @override http://localhost:3002/stylesheets/oa_notes/oa_notes-scroller.css?1283505866 */
+
+/* @override 
+	http://localhost:3000/stylesheets/note-scroller.css?1282728645
+	http://localhost:3000/stylesheets/note-scroller.css?1282729426
+	http://localhost:3000/stylesheets/note-scroller.css?1282731938
+*/
+
+.jScrollPaneTrack {
+	position: absolute;
+	cursor: pointer;
+	right: 0;
+	top: 0;
+	height: 100%;
+	background-color: transparent;
+	width: 19px;
+}
+
+.jScrollPaneTrack {
+	position: absolute;
+	cursor: pointer;
+	right: 0px;
+	width: 14px;
+	top: 0;
+	height: 100%;
+	background: white;
+	border-left: 1px solid #eaeaea;
+	border-right: 1px solid #eaeaea;
+	padding-bottom: 10px;
+}
+a.jScrollArrowUp a {
+	position: absolute;
+}
+.jScrollPaneDrag {
+	width: 14px;
+	position: absolute;
+	cursor: pointer;
+	overflow: hidden;
+	background: transparent url(/images/oa_notes/scroller-middle.png) repeat-y -2px;
+	z-index: 10;
+	height: 100%;
+	min-height: 18px;
+}
+
+.jScrollPaneDragTop {
+	position: absolute;
+	top: 0;
+	left: 0px;
+	overflow: hidden;
+	height: 9px;
+	background: transparent url(/images/oa_notes/scroller-top.png) no-repeat -2px;
+	z-index: 20;
+}
+.jScrollPaneDragBottom {
+	position: absolute;
+	bottom: 0px;
+	left: 0;
+	overflow: hidden;
+	height: 9px;
+	background: transparent url(/images/oa_notes/scroller-bottom.png) no-repeat -2px;
+	z-index: 15;
+}
+
+/*.jScrollPaneDrag {
+	position: absolute;
+	background: transparent url(/images/scroller-middle.png) repeat-y;
+	cursor: pointer;
+	overflow: hidden;
+	margin-top: 10px;
+}
+.jScrollPaneDragTop {
+	position: absolute;
+	top: 0;
+	left: 0;
+	height: 5px;
+	overflow: hidden;
+	background: transparent url(/images/scroller-top.png) no-repeat;
+}
+.jScrollPaneDragBottom {
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	overflow: hidden;
+	height: 5px;
+	background: transparent url(/images/scroller-bottom.png) no-repeat;
+}*/

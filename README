@@ -1,0 +1,121 @@
+OANotes for rails
+=======
+
+"OANotes" as in "Orion's Apotomo Notes".
+This Notes widget makes easy to add notes functionality to any rails application.
+
+
+Pre-requisits
+=============
+
+OAWidget, see: http://github.com/Orion98MC/oa_widget
+
+
+Install
+=======
+
+$ cd my_rails_app
+$ ./script/plugins install git://github.com/Orion98MC/oa_widget.git
+
+Then, you have to sync the public resources of the plugin to your app's public directory:
+
+$ rake oa_notes:sync_resources
+
+Since you want to manage Notes, you need to have a note model.
+By default, OANotes assumes you have a "Note" model. You may create one with the following:
+
+$ ./script/generate model Note content:text
+$ rake db:migrate
+
+If you already have a model for the notes you must define an Adapter module to tell OANotes how to interract with it:
+
+in app/cells/ao_notes.rb:
+module OANotes
+  module Adapter
+    def note_class
+      MyNote
+    end
+  end
+end
+
+
+Usage
+=====
+
+#  OANotes::Container.new("notes", OPTIONS)
+#
+#  OPTIONS: A hash with following options:
+#
+#  :hide => [:search, :filters, :content, :form]
+#  :scope => a named_scope for the model, this will be the default named scope for search, pagination etc...
+#  :search => a named scope for the model, this will be used to search
+#  :has_markings? => true or false (default: false)
+#  :toogle_mark! => a model method name, the method is called with note as attribute
+#  :marked? => a model method name, the method is called with note as attribute
+#  :views => [['My scope 1', :scope1], ...] an array of named scopes for view filter 
+#  :sorts => [['My filter 1', :filter1], ...] an array of named scopes for the sorting filter
+#  :pages => [['5', 5], ['Many', 100], ...] an array of per_pages for the per_page filter
+#  :details => a lambda or proc to be evaluated against the note to display the note content
+#  :form => a lambda or proc to be evaluated against the note and display the note form
+#  :eval_options => array of options to be evaluated before being called
+#  :title => string, this is the title to be displayed in the widget's title bar
+#  :save => lambda called when the user clicks on "save". It receives an argument, a hash containing the live configuration of the widget
+
+
+example 1:
+----------
+
+has_widgets do |root|
+  root << OANotes::Container.new('notes', :title => 'My notes')
+end
+
+> This creates a Notes widget named 'notes' with a special title.
+
+
+example 2:
+----------
+
+has_widgets do |root|
+  root << OANotes::Container.new('notes', 
+									:title => 'My notes',
+									:hide => [:form],
+									:search => :search,
+									:views => [['All', nil], ['Recent', :recent]],
+									:sorts => [['Date (^)', :by_date_asc], ['Date (v)', :by_date_desc]]
+								)
+end
+
+> This creates a Notes widget with a hidden form (you can create new notes but the form is hidden by default),
+  the notes are searchable, using the :search named scope of the model,
+  two views are allowed, one for viewing all records, the other for view recent notes using the :recent named scope of the model
+  two sorts are allowed, on for sorting creation date ascending using a :by_date_asc named scope of the model.
+
+The Note model could look like this:
+class Note < ActiveRecord::Base
+	named_scope :search, lambda{|arg| 
+	  query = (arg.is_a? Apotomo::Widget) ? arg.search_text : arg
+	  {:conditions => ["content LIKE ?", "%#{query}%"]}
+	}
+	
+	named_scope :recent, lambda{ {:conditions => ["updated_at >= ?", 2.days.ago], :order => "created_at DESC"}}
+	named_scope :by_date_asc, lambda{ {:order => "created_at ASC"}}
+	named_scope :by_date_asc, lambda{ {:order => "created_at DESC"}}
+end
+
+
+example 3:
+----------
+
+has_widgets do |root|
+  root << OANotes::Container.new('notes', 
+									:title => 'My notes',
+									:details => "lambda {|note| render :partial => 'partials/note_details', :locals => {:note => note}}"
+									:eval_options => [:details]
+								)
+end
+
+> The only difference is that each note detail is rendered by a partial.
+
+
+
+Copyright (c) 2010 Thierry Passeron (thierry.passeron@gmail.com), released under the MIT license

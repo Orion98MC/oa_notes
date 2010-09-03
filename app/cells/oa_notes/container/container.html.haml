@@ -1,0 +1,12 @@
+%div{:class => "oa_widget oa_notes", :id => "#{@cell.name}"}
+  %p.widget_title= @title.blank? ? "Notes" : @title
+  %div.widget_content
+    = rendered_children["#{@cell.name}-heartbeat"]
+    = rendered_children["#{@cell.name}-search"]
+    = rendered_children["#{@cell.name}-anchors"]
+    = rendered_children["#{@cell.name}-filters"]
+    = rendered_children["#{@cell.name}-content"]
+    = rendered_children["#{@cell.name}-form"]
+  
+  :javascript
+    patch_link_to_ajax_for_namespace("#{@cell.name}", "note")

@@ -1,0 +1,13 @@
+%div{:id => "#{@cell.name}", :class => "oa_notes filters"}
+  - unless @cell.parent.views.blank?
+    %div.view
+      View:
+      = select_tag :view, options_for_select(@cell.parent.views.enum_with_index.collect{|f, i| [f.first.to_s.humanize, i]}, @view.to_i), :onchange => remote_function(:url => url_for_event(:filters_changed), :with => "savedParams('#{@cell.parent.name}', {'view': value})")
+  - unless @cell.parent.sorts.blank?
+    %div.sort
+      Sort:
+      = select_tag :sort, options_for_select(@cell.parent.sorts.enum_with_index.collect{|f, i| [f.first.to_s.humanize, i]}, @sort.to_i), :onchange => remote_function(:url => url_for_event(:filters_changed), :with => "savedParams('#{@cell.parent.name}', {'sort': value})")
+  - unless @cell.parent.pages.blank?
+    %div.page
+      Per page:
+      = select_tag :page, options_for_select(@cell.parent.pages.enum_with_index.collect{|f, i| [f.first.to_s.humanize, f.last]}, @per_page.to_i), :onchange => remote_function(:url => url_for_event(:filters_changed), :with => "savedParams('#{@cell.parent.name}', {'per_page': value})")

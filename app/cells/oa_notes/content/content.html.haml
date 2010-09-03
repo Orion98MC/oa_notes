@@ -1,0 +1,33 @@
+%div{:id => "#{@cell.name}", :class => "oa_notes content"}
+  
+  = will_paginate @notes, :params => params_for_event(:paginate), :inner_window => 1, :outer_window => 1, :previous_label => '&nbsp;'*15, :next_label => '&nbsp;'*15
+  
+  - if @notes.blank?
+
+    %p.empty
+      No notes
+
+  - else
+
+    %div.notes_content
+      %ul
+        - @notes.each do |note|
+          %li.has_child_nubins
+            - if deletable?(note)
+              %div.delete.nubins{:style => "display: none;"}
+                = link_to image_tag('oa_notes/trash.png'), url_for_event(:delete), {:class => 'action_link_with_id confirm_delete', :note_id => "#{note.id}"}
+          
+            - if has_markings?
+              %div.mark
+                = link_to image_tag(marked?(note) ? 'oa_notes/on.png' : 'oa_notes/off.png'), markable?(note) ? url_for_event(:mark) : "#", {:class => 'action_link_with_id', :note_id => "#{note.id}"}
+            
+            %div.note_content.maxsized
+        
+              - content = note_content(note) do
+                = note.content
+          
+              = editable?(note) ? link_to(content, url_for_event(:edit), {:class => 'action_link_with_id', :note_id => "#{note.id}"}) : content
+          
+    :javascript
+      jQuery('div.maxsized:height(>79)').each(function(i,e){jQuery(e).css('height', 80).removeClass('maxsized');})
+      jQuery('div.note_content:height(>79)').jScrollPane();

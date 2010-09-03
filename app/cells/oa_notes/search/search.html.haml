@@ -1,0 +1,9 @@
+- search_id = "#{@cell.name}-search_field"
+- cache_name = "#{@cell.name}-search_cache".gsub(/-/, '_')
+
+:javascript
+  var #{cache_name} = '#{@search_text}';
+  
+%div{:id => "#{@cell.name}", :class => "oa_notes search"}
+  = text_field_tag :search_query, @search_text, :class => 'first_responder', :id => search_id
+  = observe_field search_id, :frequency => 0.5, :url => url_for_event(:search), :with => "savedParams('#{@cell.parent.name}', {'search_text': #{cache_name}})", :condition => "#{cache_name} != jQuery('##{search_id}').val()", :before => "#{cache_name} = jQuery('##{search_id}').val();"
