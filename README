@@ -77,12 +77,12 @@ example 2:
 
 has_widgets do |root|
   root << OANotes::Container.new('notes', 
-									:title => 'My notes',
-									:hide => [:form],
-									:search => :search,
-									:views => [['All', nil], ['Recent', :recent]],
-									:sorts => [['Date (^)', :by_date_asc], ['Date (v)', :by_date_desc]]
-								)
+	:title => 'My notes',
+	:hide => [:form],
+	:search => :search,
+	:views => [['All', nil], ['Recent', :recent]],
+	:sorts => [['Date (^)', :by_date_asc], ['Date (v)', :by_date_desc]]
+	)
 end
 
 > This creates a Notes widget with a hidden form (you can create new notes but the form is hidden by default),
@@ -97,9 +97,9 @@ class Note < ActiveRecord::Base
 	  {:conditions => ["content LIKE ?", "%#{query}%"]}
 	}
 	
-	named_scope :recent, lambda{ {:conditions => ["updated_at >= ?", 2.days.ago], :order => "created_at DESC"}}
+	named_scope :recent, lambda{ {:conditions => ["updated_at >= ?", 2.days.ago]}}
 	named_scope :by_date_asc, lambda{ {:order => "created_at ASC"}}
-	named_scope :by_date_asc, lambda{ {:order => "created_at DESC"}}
+	named_scope :by_date_desc, lambda{ {:order => "created_at DESC"}}
 end
 
 
@@ -108,10 +108,10 @@ example 3:
 
 has_widgets do |root|
   root << OANotes::Container.new('notes', 
-									:title => 'My notes',
-									:details => "lambda {|note| render :partial => 'partials/note_details', :locals => {:note => note}}"
-									:eval_options => [:details]
-								)
+	:title => 'My notes',
+	:details => "lambda {|note| render :partial => 'partials/note_details', :locals => {:note => note}}"
+	:eval_options => [:details]
+	)
 end
 
 > The only difference is that each note detail is rendered by a partial.
