@@ -9,6 +9,7 @@ Pre-requisits
 =============
 
 OAWidget, see: http://github.com/Orion98MC/oa_widget
+will_paginate for notes pagination, see: http://github.com/mislav/will_paginate
 
 
 Install
@@ -28,6 +29,26 @@ $ ./script/generate model Note content:text
 $ rake db:migrate
 
 If you already have a model for the notes you must specify :notes => "MyNoteClass"
+
+
+
+About styling and javascript include:
+-------------------------------------
+
+Since the OAWidget and OANotes widgets use custom styling and javascript tools, you must include the stylesheets and javacripts in the head of your layout. To help you include the correct set of files, there are helper methods which output the list of required files:
+
+  #oa_widget_javascripts
+  #oa_notes_javascripts
+  #oa_widget_stylesheets
+  #oa_notes_stylesheets
+
+Example of includes to add in app/views/layouts/application.html.haml:
+...
+  %head
+    ...
+    = javascript_include_tag oa_widget_javascripts, oa_notes_javascripts
+    = stylesheet_link_tag oa_widget_stylesheets, oa_notes_stylesheets
+
 
 Usage
 =====
