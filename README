@@ -15,7 +15,7 @@ Install
 =======
 
 $ cd my_rails_app
-$ ./script/plugins install git://github.com/Orion98MC/oa_widget.git
+$ ./script/plugins install git://github.com/Orion98MC/oa_notes.git
 
 Then, you have to sync the public resources of the plugin to your app's public directory:
 
