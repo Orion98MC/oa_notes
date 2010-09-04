@@ -109,79 +109,9 @@ module OANotes
   end
 end
 
-Example:
-========
-in app/controllers/dashboard_controller.rb:
-class DashboardController < ApplicationController
-  include Apotomo::Rails::ControllerMethods
-  ...
-  has_widgets do |root|
-    root < OANotes::Container.new('notes', 
-      :title => 'My notes', 
-      :notes => "@current_user.notes", # assuming user has many notes 
-      :search => :search, 
-      :note_partial => 'partials/user_note',
-    )
-  end
-  
-  def show
-    #assuming @current_user is already set here
-  end
-  ...
-end
 
-in app/views/dashboard/show.haml.html:
-...
-  = render_widget 'notes'
-...
-
-in app/cells/partials/_user_notes.html.haml
-%p
-  %span= note.created_at
-  = note.content
-
-
-example 1:
-----------
-
-has_widgets do |root|
-  root << OANotes::Container.new('notes', :title => 'My notes')
-end
-
-> This creates a Notes widget named 'notes' with a special title.
-
-
-example 2:
-----------
-
-has_widgets do |root|
-  root << OANotes::Container.new('notes', 
-	:title => 'My notes',
-	:hide => [:form],
-	:search => :search,
-	:views => [['All', nil], ['Recent', :recent]],
-	:sorts => [['Date (^)', :by_date_asc], ['Date (v)', :by_date_desc]]
-	)
-end
-
-> This creates a Notes widget with a hidden form (you can create new notes but the form is hidden by default),
-  the notes are searchable, using the :search named scope of the model,
-  two views are allowed, one for viewing all records, the other for viewing recent notes using the :recent named scope of the model
-  two sorts are allowed, on for sorting creation date ascending using a :by_date_asc named scope of the model.
-
-The Note model could look like this:
-class Note < ActiveRecord::Base
-	named_scope :search, lambda{|arg| 
-	  query = (arg.is_a? AONotes::Container) ? arg.search_text : arg
-	  {:conditions => ["content LIKE ?", "%#{query}%"]}
-	}
-	
-	named_scope :recent, lambda{ {:conditions => ["updated_at >= ?", 2.days.ago]}}
-	named_scope :by_date_asc, lambda{ {:order => "created_at ASC"}}
-	named_scope :by_date_desc, lambda{ {:order => "created_at DESC"}}
-end
-
-
+Examples:
+=========
 Checkout the wiki page for a simple tutorial: http://github.com/Orion98MC/oa_notes/wiki
 
 
