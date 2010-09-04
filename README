@@ -27,17 +27,7 @@ By default, OANotes assumes you have a "Note" model. You may create one with the
 $ ./script/generate model Note content:text
 $ rake db:migrate
 
-If you already have a model for the notes you must define an Adapter module to tell OANotes how to interract with it:
-
-in app/cells/ao_notes.rb:
-module OANotes
-  module Adapter
-    def note_class
-      MyNote
-    end
-  end
-end
-
+If you already have a model for the notes you must specify :notes => "MyNoteClass"
 
 Usage
 =====
@@ -147,7 +137,7 @@ end
 The Note model could look like this:
 class Note < ActiveRecord::Base
 	named_scope :search, lambda{|arg| 
-	  query = (arg.is_a? Apotomo::Widget) ? arg.search_text : arg
+	  query = (arg.is_a? AONotes::Container) ? arg.search_text : arg
 	  {:conditions => ["content LIKE ?", "%#{query}%"]}
 	}
 	
@@ -155,21 +145,6 @@ class Note < ActiveRecord::Base
 	named_scope :by_date_asc, lambda{ {:order => "created_at ASC"}}
 	named_scope :by_date_desc, lambda{ {:order => "created_at DESC"}}
 end
-
-
-example 3:
-----------
-
-has_widgets do |root|
-  root << OANotes::Container.new('notes', 
-	:title => 'My notes',
-	:details => "lambda {|note| render :partial => 'partials/note_details', :locals => {:note => note}}"
-	:eval_options => [:details]
-	)
-end
-
-> The only difference is that each note detail is rendered by a partial.
-
 
 
 Copyright (c) 2010 Thierry Passeron (thierry.passeron@gmail.com), released under the MIT license
