@@ -26,7 +26,7 @@ module OANotes
       formWidget      = OANotes::Form.new("#{top.name}-form",       :preserve => PRESERVING_PARAMS)
       
       top << heartbeatWidget
-      top << searchWidget     unless top.hidden?(:search)
+      top << searchWidget     unless (top.hidden?(:search) || top.search.blank?)
       top << anchorsWidget    if top.save?
       top << filtersWidget    unless top.hidden?(:filters)
       top << contentWidget    unless top.hidden?(:content)
@@ -192,6 +192,7 @@ module OANotes
     def note_partial; @note_partial; end
     def form_partial; @form_partial; end
     def has_markings?; @has_markings; end
+    def search; @search; end
     
     def filters
       f = []
