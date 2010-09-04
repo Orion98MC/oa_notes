@@ -81,6 +81,7 @@ params:
  :search_text => string, the text searched using the :search scope
  :view => integer, the index of the current view scope used in the views array
  :sort => integer, the index of the current sort scope used in the sorts array
+ :per_page => integer, the number of notes per page used in pagination
 
 
 Authorizations:
