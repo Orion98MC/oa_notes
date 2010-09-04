@@ -181,4 +181,7 @@ class Note < ActiveRecord::Base
 end
 
 
+Checkout the wiki page for a simple tutorial: http://github.com/Orion98MC/oa_notes/wiki
+
+
 Copyright (c) 2010 Thierry Passeron (thierry.passeron@gmail.com), released under the MIT license
