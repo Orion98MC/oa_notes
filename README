@@ -46,20 +46,74 @@ Usage
 #
 #  OPTIONS: A hash with following options:
 #
-#  :hide => [:search, :filters, :content, :form]
-#  :scope => a named_scope for the model, this will be the default named scope for search, pagination etc...
-#  :search => a named scope for the model, this will be used to search
-#  :has_markings? => true or false (default: false)
-#  :toogle_mark! => a model method name, the method is called with note as attribute
-#  :marked? => a model method name, the method is called with note as attribute
+#  :notes => string (ex: :notes => "@intervention.notes" or :notes => "MyNote")
+#  :save => lambda {|config| ...save config hash... } 
+#
+# scopes:
+#  :search => a named scope of the model used for searches, it receives self as parameter when called.
 #  :views => [['My scope 1', :scope1], ...] an array of named scopes for view filter 
 #  :sorts => [['My filter 1', :filter1], ...] an array of named scopes for the sorting filter
+#
+# marks:
+#  :has_markings? => true or false (default: false)
+#  :toogle_mark! => a model method name, the method is called when the user marks or unmarks a note and is passed the note as parameter
+#  :marked? => a model method name, the method is called with note as parameter. Must return true or false
+#
+# customizations:
+#  :hide => [:search, :filters, :content, :form]
 #  :pages => [['5', 5], ['Many', 100], ...] an array of per_pages for the per_page filter
-#  :details => a lambda or proc to be evaluated against the note to display the note content
-#  :form => a lambda or proc to be evaluated against the note and display the note form
-#  :eval_options => array of options to be evaluated before being called
+#  :note_partial => 'partial/path' the partial to use when rendering notes. it is passed a :note locals
+#  :form_partial => 'partial/path' the partial to use when rendering the form. it is passed a :note locals
 #  :title => string, this is the title to be displayed in the widget's title bar
-#  :save => lambda called when the user clicks on "save". It receives an argument, a hash containing the live configuration of the widget
+#
+# Authorizations:
+# ===============
+# By default, all is allowed, to allow/forbid delete/create/update/mark notes you can create a Authorizations module in OANote module
+# Put it in app/cells/oa_notes.rb, here is an example:
+#
+# module OANotes
+#   module Authorizations
+#     def delete?(note)
+#       can? :delete, note
+#     end
+#
+#     def create?(note)
+#       can? :create, note.class
+#     end
+#
+#     def update?(note)
+#       can? :update, note
+#     end
+#     
+#     def toogle_mark?(note)
+#       can? :toogle_mark, note
+#     end
+#   end
+# end
+#
+# Example:
+# ========
+# class DashboardController < ApplicationController
+#   include Apotomo::Rails::ControllerMethods
+#   ...
+#   has_widgets do |root|
+#     root < OANotes::Container.new('notes', 
+#       :title => 'My notes', 
+#       :notes => "@current_user.notes", 
+#       :search => :search, 
+#       :note_partial => 'partials/user_note',
+#     )
+#   end
+#   
+#   def show
+#   end
+#   ...
+# end
+#
+# in views/dashboard/show.haml.html:
+# ...
+#   = render_widget 'notes'
+# ...
 
 
 example 1:

@@ -22,10 +22,7 @@
                 = link_to image_tag(marked?(note) ? 'oa_notes/on.png' : 'oa_notes/off.png'), markable?(note) ? url_for_event(:mark) : "#", {:class => 'action_link_with_id', :note_id => "#{note.id}"}
             
             %div.note_content.maxsized
-        
-              - content = note_content(note) do
-                = note.content
-          
+              - content = @cell.parent.note_partial.blank? ? note.content : render(:partial => @cell.parent.note_partial, :locals => {:note => note})          
               = editable?(note) ? link_to(content, url_for_event(:edit), {:class => 'action_link_with_id', :note_id => "#{note.id}"}) : content
           
     :javascript

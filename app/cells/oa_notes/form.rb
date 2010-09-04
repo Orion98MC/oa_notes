@@ -8,52 +8,33 @@ module OANotes
     
     module ::FormHelper
       def parent; @cell.parent; end
-      
-      def note_form(note, &block)
-        unless @form.blank?
-          if @eval_options.include?(:form)
-            logger.debug("capture eval note")
-            concat capture{eval(@note_content).call(note)}
-          else
-            logger.debug("capture note")
-            concat capture{@note_content.call(note)}
-          end
-        else
-          logger.debug("capture yield note")
-          if block_given?
-            concat capture(&block)
-          end
-        end
-      end
     end
     
     helper ::FormHelper
     
     def initialize(widget_id, options={})
       preserves_attrs(options.delete(:preserve))
-      @form = options.delete(:form)
-      @eval_options = options.include?(:eval_options) ? options.delete(:eval_options) : []
       super(widget_id, :form, options)
     end
     
     def form # The form to add notes      
-      @note = parent.note_class.new()
+      @note = new_note()
       if parent.hidden?(:form)
-        render parent.creatable? ? {:view => 'hidden'} : {:nothing => true}
+        render parent.create? ? {:view => 'hidden'} : {:nothing => true}
       else
         render :view => 'shown'
       end
     end
     
     def show_form
-      @note = parent.note_class.new()
+      @note = new_note()
       replace :view => 'shown'
     end
     
     def update_form
-      @note = parent.note_class.new()
+      @note = new_note()
       if parent.hidden?(:form)
-        replace parent.creatable? ? {:view => 'hidden'} : {:nothing => true}
+        replace parent.create? ? {:view => 'hidden'} : {:nothing => true}
       else
         replace :view => 'shown'
       end      
@@ -63,7 +44,7 @@ module OANotes
     #pragma mark The triggered actions
     
     def create_note
-      @note = parent.note_class.new(param(:note))
+      @note = new_note(param(:note))
 
       if @note.save
         trigger :content_changed
@@ -75,7 +56,7 @@ module OANotes
     
     def update_note
       begin
-        @note = parent.note_class.find(param(:id))
+        @note = find_note(param(:id))
       rescue
         trigger :content_changed
         return invoke :update_form
@@ -90,8 +71,17 @@ module OANotes
     end
     
     def edit
-      @note = parent.note_class.find(param(:id))
+      @note = find_note(param(:id))
       replace :view => 'shown'
+    end
+    
+    private
+    def new_note(options={})
+      parent.eval_note.new(options)
+    end
+    
+    def find_note(id)
+      parent.eval_note.find(id)
     end
         
   end

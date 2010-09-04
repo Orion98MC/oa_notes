@@ -1,17 +1,13 @@
 module OANotes
-  # Set a default adapter for the "Note" model
-  begin;OANotes::Adapter.instance_methods;rescue;module Adapter;end;end
+  begin;OANotes::Authorizations.instance_methods;rescue;module Authorizations;end;end
   
   class Container < OAWidget::Base   
-    include OANotes::Adapter
+    include OANotes::Authorizations
     
     # Set adapter defaults
-    unless OANotes::Adapter.instance_methods.include?('note_class')
-      OANotes::Adapter::module_eval {define_method('note_class'.to_sym){Note}}
-    end
-    ['editable?', 'deletable?', 'creatable?'].each do |method|
-      unless OANotes::Adapter.instance_methods.include?(method)
-        OANotes::Adapter::module_eval {define_method(method.to_sym){true}}
+    ['update?', 'delete?', 'create?', 'toogle_mark?'].each do |method|
+      unless OANotes::Authorizations.instance_methods.include?(method)
+        OANotes::Authorizations::module_eval {define_method(method.to_sym){true}}
       end
     end # each method
 
@@ -26,15 +22,15 @@ module OANotes
       
       searchWidget    = OANotes::Search.new("#{top.name}-search",   :preserve => PRESERVING_PARAMS)
       filtersWidget   = OANotes::Filters.new("#{top.name}-filters", :preserve => PRESERVING_PARAMS)
-      contentWidget   = OANotes::Content.new("#{top.name}-content", :preserve => PRESERVING_PARAMS, :details => top.details, :eval_options => top.eval_options)
-      formWidget      = OANotes::Form.new("#{top.name}-form",       :preserve => PRESERVING_PARAMS, :form => top.form, :eval_options => top.eval_options)
+      contentWidget   = OANotes::Content.new("#{top.name}-content", :preserve => PRESERVING_PARAMS)
+      formWidget      = OANotes::Form.new("#{top.name}-form",       :preserve => PRESERVING_PARAMS)
       
       top << heartbeatWidget
       top << searchWidget     unless top.hidden?(:search)
-      top << anchorsWidget    if top.saveable?
+      top << anchorsWidget    if top.save?
       top << filtersWidget    unless top.hidden?(:filters)
       top << contentWidget    unless top.hidden?(:content)
-      top << formWidget       if top.creatable?
+      top << formWidget       if top.create?
 
       top.respond_to_event :params_changed,   :with => :update_heartbeat, :on => heartbeatWidget.name
       top.respond_to_event :filters_changed,  :with => :update_heartbeat, :on => heartbeatWidget.name
@@ -52,39 +48,91 @@ module OANotes
       #
       #  OPTIONS: A hash with following options:
       #
-      #  :hide => [:search, :filters, :content, :form]
-      #  :scope => a named_scope for the model, this will be the default named scope for search, pagination etc...
-      #  :search => a named scope for the model, this will be used to search
-      #  :has_markings? => true or false (default: false)
-      #  :toogle_mark! => a model method name, the method is called with note as attribute
-      #  :marked? => a model method name, the method is called with note as attribute
+      #  :notes => string (ex: :notes => "@intervention.notes" or :notes => "MyNote")
+      #  :save => lambda {|config| ...save config hash... } 
+      #
+      # scopes:
+      #  :search => a named scope of the model used for searches, it receives self as parameter when called.
       #  :views => [['My scope 1', :scope1], ...] an array of named scopes for view filter 
       #  :sorts => [['My filter 1', :filter1], ...] an array of named scopes for the sorting filter
+      #
+      # marks:
+      #  :has_markings? => true or false (default: false)
+      #  :toogle_mark! => a model method name, the method is called when the user marks or unmarks a note and is passed the note as parameter
+      #  :marked? => a model method name, the method is called with note as parameter. Must return true or false
+      #
+      # customizations:
+      #  :hide => [:search, :filters, :content, :form]
       #  :pages => [['5', 5], ['Many', 100], ...] an array of per_pages for the per_page filter
-      #  :details => a lambda or proc to be evaluated against the note to display the note content
-      #  :form => a lambda or proc to be evaluated against the note and display the note form
-      #  :eval_options => array of options to be evaluated before being called
+      #  :note_partial => 'partial/path' the partial to use when rendering notes. it is passed a :note locals
+      #  :form_partial => 'partial/path' the partial to use when rendering the form. it is passed a :note locals
       #  :title => string, this is the title to be displayed in the widget's title bar
-      #  :save => lambda called when the user clicks on "save". It receives an argument, a hash containing the live configuration of the widget
+      #
+      # Authorizations:
+      # ===============
+      # By default, all is allowed, to allow/forbid delete/create/update/mark notes you can create a Authorizations module in OANote module
+      # Put it in app/cells/oa_notes.rb, here is an example:
+      #
+      # module OANotes
+      #   module Authorizations
+      #     def delete?(note)
+      #       can? :delete, note
+      #     end
+      #
+      #     def create?(note)
+      #       can? :create, note.class
+      #     end
+      #
+      #     def update?(note)
+      #       can? :update, note
+      #     end
+      #     
+      #     def toogle_mark?(note)
+      #       can? :toogle_mark, note
+      #     end
+      #   end
+      # end
+      #
+      # Example:
+      # ========
+      # class DashboardController < ApplicationController
+      #   include Apotomo::Rails::ControllerMethods
+      #   ...
+      #   has_widgets do |root|
+      #     root < OANotes::Container.new('notes', 
+      #       :title => 'My notes', 
+      #       :notes => "@current_user.notes", 
+      #       :search => :search, 
+      #       :note_partial => 'partials/user_note',
+      #     )
+      #   end
+      #   
+      #   def show
+      #   end
+      #   ...
+      # end
+      #
+      # in views/dashboard/show.haml.html:
+      # ...
+      #   = render_widget 'notes'
+      # ...
       
       # saved options
       @saved_options = {}
       # saveable attributes
-      ([:hide, :scope, :marked?, :toogle_mark!, :details, :views, :sorts, :pages, :search, :has_markings?] << PRESERVING_PARAMS).each do |saved_attribute|
+      ([:hide, :marked?, :toogle_mark!, :note_partial, :form_partial, :views, :sorts, :pages, :search, :has_markings?, :title, :notes] << PRESERVING_PARAMS).each do |saved_attribute|
         @saved_options[saved_attribute] = options[saved_attribute] if options.include?(saved_attribute)
       end
-      
-      @save = options.delete(:save)
-      @eval_options = options.include?(:eval_options) ? options.delete(:eval_options) : []
+
+      @notes = options.delete(:notes) #string
+      @save = options.delete(:save) #lambda
       @hide = options.delete(:hide) #array
-      @scope = options.delete(:scope) #scope
       @search = options.delete(:search) #scope
       @has_markings = options.delete(:has_markings?) #boolean
-      @marked = options.delete(:marked?) #method name of the note model
-      @toogle_mark = options.delete(:toogle_mark!) #method name of the note model
-      @per_page = options.delete(:per_page) #int
-      @details = options.delete(:details) #lambda
-      @form = options.delete(:form) #lambda
+      @marked = options.delete(:marked?) #method name
+      @toogle_mark = options.delete(:toogle_mark!) #method name
+      @note_partial = options.delete(:note_partial) #string
+      @form_partial = options.delete(:form_partial) #string
       @views = options.delete(:views) #array of scopes
       @sorts = options.delete(:sorts) #array of scopes
       @pages = options.delete(:pages) #array of per_page integer
@@ -126,9 +174,8 @@ module OANotes
     def sorts; @sorts; end
     def pages; @pages; end
     def per_page; @per_page; end
-    def details; @details; end
-    def form; @form; end
-    def eval_options; @eval_options; end
+    def note_partial; @note_partial; end
+    def form_partial; @form_partial; end
     def has_markings?; @has_markings; end
     
     def filters
@@ -137,10 +184,17 @@ module OANotes
       f << @sorts[@sort.to_i].last unless @sorts.blank? && @sort.blank?
       (f - [nil]).flatten
     end
+    
+    def note_scope
+      @note.blank? ? "Note" : @notes
+    end
+    
+    def eval_note
+      eval note_scope
+    end
         
     def all_notes(more=nil)
       scopes = []
-      scopes << @scope.to_sym unless @scope.blank?
       scopes << filters
       if more.nil?
         scopes << @search unless search_text.blank?
@@ -149,18 +203,17 @@ module OANotes
       end
       scopes.flatten!
       scopes -= [nil]
-      
-      allnotes = ["note_class"]
+
+      scopes_to_eval = [note_scope]
       scopes.each do |scope|
-        allnotes << "send(:#{scope}, self)"
+        scopes_to_eval << "send(:#{scope}, self)"
       end
-      RAILS_DEFAULT_LOGGER.debug("all_notes: #{allnotes.join('.')}")
+      RAILS_DEFAULT_LOGGER.debug("all_notes: #{scopes_to_eval.join('.')}")
       debugger
-      eval allnotes.join('.')
+      eval scopes_to_eval.join('.')
     end
     
     def marked?(note)
-      debugger
       note.send(@marked.to_sym)
     end
     
@@ -168,7 +221,7 @@ module OANotes
       note.send(@toogle_mark.to_sym)
     end
     
-    def saveable?
+    def save?
       !@save.nil?
     end
     

@@ -3,21 +3,25 @@
   = error_messages_for :note
 
   - form_tag "", "data-event-url" => url_for_event(@note.new_record? ? :create : :update) do    
+    - if @cell.parent.form_partial.blank?
 
-    - unless @note.new_record?
-      = hidden_field_tag 'id', @note.id
-      
-    %div.new_note
-      %p.title
-        = @note.new_record? ? "New note" : "Update this note"
-      %div.note_content
-        = text_area :note, :content, :rows => 2
+      - unless @note.new_record?
+        = hidden_field_tag 'id', @note.id
+    
+      %div.new_note
+        %p.title
+          = @note.new_record? ? "New note" : "Update this note"
+        %div.note_content
+          = text_area :note, :content, :rows => 2
         
-    %p.submit
-      = submit_tag @note.new_record? ? "Create!" : "Update!"
-      |
-      = link_to "Cancel", url_for_event(:cancel), :class => "action_link"
-      
+      %p.submit
+        = submit_tag @note.new_record? ? "Create!" : "Update!"
+        |
+        = link_to "Cancel", url_for_event(:cancel), :class => "action_link"
+
+    - else
+    
+      = render :partial => @cell.parent.form_partial, :locals => {:note => note}
       
   - unless @note.new_record?
     -# Give focus to textarea when updating
