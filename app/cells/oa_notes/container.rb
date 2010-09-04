@@ -68,6 +68,12 @@ module OANotes
       #  :form_partial => 'partial/path' the partial to use when rendering the form. it is passed a :note locals
       #  :title => string, this is the title to be displayed in the widget's title bar
       #
+      # params:
+      #  :search_text => string, the text searched using the :search scope
+      #  :view => integer, the index of the current view scope used in the views array
+      #  :sort => integer, the index of the current sort scope used in the sorts array
+      #
+      #
       # Authorizations:
       # ===============
       # By default, all is allowed, to allow/forbid delete/create/update/mark notes you can create a Authorizations module in OANote module
@@ -95,27 +101,35 @@ module OANotes
       #
       # Example:
       # ========
+      # in app/controllers/dashboard_controller.rb:
       # class DashboardController < ApplicationController
       #   include Apotomo::Rails::ControllerMethods
       #   ...
       #   has_widgets do |root|
       #     root < OANotes::Container.new('notes', 
       #       :title => 'My notes', 
-      #       :notes => "@current_user.notes", 
+      #       :notes => "@current_user.notes", # assuming user has many notes 
       #       :search => :search, 
       #       :note_partial => 'partials/user_note',
       #     )
       #   end
       #   
       #   def show
+      #     #@current_user is already set here
       #   end
       #   ...
       # end
       #
-      # in views/dashboard/show.haml.html:
+      # in app/views/dashboard/show.haml.html:
       # ...
       #   = render_widget 'notes'
       # ...
+      #
+      # in app/cells/partials/_user_notes.html.haml
+      # %p
+      #   %span= note.created_at
+      #   = note.content
+      #
       
       # saved options
       @saved_options = {}
